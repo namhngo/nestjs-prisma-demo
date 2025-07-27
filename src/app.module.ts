@@ -3,10 +3,21 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { CoreModule } from './core/core.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [ UsersModule, CoreModule], 
+  imports: [
+    UsersModule,
+    CoreModule,
+    // add jwt module
+    JwtModule.register({
+      global: true,
+      secret: 'super_secret_key',
+      signOptions: { expiresIn: '12h' },
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
+
 export class AppModule {}
