@@ -1,9 +1,11 @@
-import { ConflictException, HttpException, Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/core/services/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto } from './dtos/login-user.dto';
+import { LoginResponse, UserPayload } from './interfaces/users-login.interface';
 
 @Injectable()
 export class UsersService {
@@ -38,7 +40,39 @@ export class UsersService {
       }
   }
 
-  // async loginUser
+  async loginUser(loginUserDto: LoginUserDto): Promise<LoginResponse> {
+      try {
+          // find user by email
+          const user = await this.prisma.user.findUnique({
+              where: {email: loginUserDto.email},
+          })
+
+          // check if user exists
+          if(!user) {
+              throw new NotFoundException('User not found');
+          }
+
+          // check if password is correct by comparing it with the hashed password in the database
+          if (!(await compare(loginUserDto.password, user.password))) {
+            throw new UnauthorizedException('Invalid credentials');
+          }
+          
+          const payload: UserPayload = {
+            // create payload for JWT
+            sub: user.id, // sub is short for subject. It is the user id
+            email: user.email,
+            name: user.name,
+          };
+      
+          return {
+            // return access token
+            access_token: await this.jwtService.signAsync(payload),
+          };
+      } catch (error) {
+          // throw error if any
+          throw new HttpException(error, 500);
+      }
+  }
 
   // async updateUser
 
