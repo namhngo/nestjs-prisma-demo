@@ -7,14 +7,18 @@ import {
     ParseIntPipe,
     Patch,
     Post,
+    Request,
+    UseGuards,
   } from '@nestjs/common';
   import { CreateUserDto } from './dtos/create-user.dto';
   import { UpdateUsertDto } from './dtos/update-user.dto';
   import { LoginUserDto } from './dtos/login-user.dto';
   import { UsersService } from './users.service';
   import { User } from '@prisma/client';
-  import { LoginResponse } from './interfaces/users-login.interface';
-
+  import { LoginResponse, UserPayload } from './interfaces/users-login.interface';
+import { ExpressRequestWithUser } from './interfaces/express-request-with-user.interface';
+import { Public } from 'src/common/decorators/public.decorator';
+import { IsMineGuard } from 'src/common/guards/is-mine.guard';
   
   @Controller('users')
   export class UsersController {
@@ -22,12 +26,14 @@ import {
     // inject users service
     constructor(private readonly usersService: UsersService) {}
 
+    @Public()
     @Post('register')
     async registerUser(@Body() createUserDto: CreateUserDto): Promise<User> {
       // call users service method to register new user
       return this.usersService.registerUser(createUserDto);
     }
   
+    @Public()
     @Post('login')
     loginUser(@Body() loginUserDto: LoginUserDto): Promise<LoginResponse> {
       // call users service method to login user
@@ -35,11 +41,14 @@ import {
     }
   
     @Get('me')
-    me(): string {
-      return 'Get my Profile!';
+    me(@Request() req: ExpressRequestWithUser): UserPayload {
+      return req.user;
     }
-  
+ 
     @Patch(':id')
+    // IsMineGuard is used to prevent users from updating resources that don't belong to them
+    // Add access token when test endpoint
+    // @UseGuards(IsMineGuard) 
     async updateUser(
       @Param('id', ParseIntPipe) id: number,
       @Body() updateUserDto: UpdateUsertDto,
@@ -49,6 +58,9 @@ import {
     }
   
     @Delete(':id')
+    // IsMineGuard is used to prevent users from updating resources that don't belong to them
+    // Add access token when test endpoint
+    // @UseGuards(IsMineGuard)
     async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<string> {
       // call users service method to delete user
       return this.usersService.deleteUser(+id);
