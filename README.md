@@ -24,7 +24,14 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A NestJS application demonstrating **unit testing with mocking** for Prisma ORM and PostgreSQL. This project showcases comprehensive testing strategies including deep mocking of database operations, external library mocking (bcrypt, JWT), and error simulation for various Prisma error codes.
+
+### Key Testing Features
+- **Prisma Client Deep Mocking** using `jest-mock-extended`
+- **External Library Mocking** for bcrypt and JWT services
+- **Database Error Simulation** (P2002, P2025, P2003 error codes)
+- **Comprehensive CRUD Testing** with full coverage
+- **Authentication & Authorization Testing**
 
 ## Installation
 
@@ -47,9 +54,14 @@ $ npm run start:prod
 
 ## Test
 
+This project includes comprehensive unit tests demonstrating advanced mocking strategies:
+
 ```bash
 # unit tests
 $ npm run test
+
+# unit tests in watch mode
+$ npm run test:watch
 
 # e2e tests
 $ npm run test:e2e
@@ -57,6 +69,18 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+### Testing Structure
+- **Users Service Tests**: Registration, login, update, delete with error scenarios
+- **Posts Service Tests**: CRUD operations with pagination and validation
+- **Mock Strategies**: Deep Prisma mocking, bcrypt mocking, JWT service mocking
+- **Error Testing**: Database constraint violations, foreign key errors, not found scenarios
+
+### Key Test Files
+- `src/modules/users/tests/users.service.spec.ts` - User service unit tests with comprehensive mocking
+- `src/modules/posts/tests/posts.service.spec.ts` - Post service unit tests with error simulation
+- Uses `jest-mock-extended` for deep mocking of Prisma Client
+- Simulates real database errors (P2002, P2025, P2003) without actual database calls
 
 ## Support
 
